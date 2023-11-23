@@ -16,13 +16,13 @@ USE_SOURCE_DIR:=$(TOPDIR)/fahim/network/utils/modbusgwbcknd
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 include $(INCLUDE_DIR)/package.mk
-# include $(INCLUDE_DIR)/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 define Package/modbusgwbcknd
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Modbusgw Backend
-  DEPENDS:=+jsoncpp +libulfius +libmodbus 
+  DEPENDS:=+jsoncpp +libulfius +libmodbus +libsqlite3
 endef
 
 define Package/modbusgwbcknd/description
@@ -38,9 +38,9 @@ endef
 # endef
 
 # Package build instructions; invoke the target-specific compiler to first compile the source file, and then to link the file into the final executable
-define Build/Compile
-		$(TARGET_CXX) $(TARGET_CXXLAGS) -o $(PKG_BUILD_DIR)/mgbcknd  $(PKG_BUILD_DIR)/server.cpp  $(TARGET_CXXFLAGS) -ljsoncpp -lmodbus -lulfius
-endef
+# define Build/Compile
+# 		$(TARGET_CXX) $(TARGET_CXXLAGS) -o $(PKG_BUILD_DIR)/mgbcknd  $(PKG_BUILD_DIR)/server.cpp  $(TARGET_CXXFLAGS) -ljsoncpp -lmodbus -lulfius
+# endef
 
 # Package install instructions; create a directory inside the package to hold our executable, and then copy the executable we built previously into the folder
 define Package/modbusgwbcknd/install
