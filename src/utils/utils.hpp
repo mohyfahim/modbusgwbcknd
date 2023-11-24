@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _MBBK_UTILS_H_
-#define _MBBK_UTILS_H_
 
 #include <json/json.h>
 
@@ -10,25 +8,14 @@
 
 #define MBBK_DB_PATH "/var/run/mbbk.db"
 
-inline auto mbbk_storage = sqlite_orm::make_storage(
+extern inline auto mbbk_storage = sqlite_orm::make_storage(
     MBBK_DB_PATH,
     sqlite_orm::make_table(
         "user",
         sqlite_orm::make_column("id", &UserModel::id,
                                 sqlite_orm::primary_key()),
         sqlite_orm::make_column("name", &UserModel::username),
-        sqlite_orm::make_column("abilities", &UserModel::password)));
-
-// template <class T> class MbbkDbHandler {
-// public:
-//   MbbkDbHandler(T init) : storage(init) {}
-//   T storage;
-// };
-
-// template <class T> class MbbkGlobal : public MbbkDbHandler<T> {
-// public:
-//   MbbkGlobal(T init) : MbbkDbHandler(init) {}
-// };
+        sqlite_orm::make_column("password", &UserModel::password)));
 
 template <class T>
 const char *mbbk_utils_generate_resp(bool success, T data, int code) {
@@ -40,9 +27,6 @@ const char *mbbk_utils_generate_resp(bool success, T data, int code) {
     resp["message"] = data;
   }
   resp["code"] = code;
-
-  Json::StreamWriterBuilder builder;
-  return Json::writeString(builder, resp).c_str();
+  std::string resp_s = Json::FastWriter().write(resp);
+  return resp_s.c_str();
 }
-
-#endif

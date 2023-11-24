@@ -16,7 +16,9 @@
  */
 int main(void) {
   struct _u_instance instance;
+ 
   mbbk_storage.sync_schema();
+
   // Initialize instance with the port number
   if (ulfius_init_instance(&instance, PORT, NULL, NULL) != U_OK) {
     fprintf(stderr, "Error ulfius_init_instance, abort\n");
@@ -27,7 +29,7 @@ int main(void) {
   mbbk_register_routes(&instance, NULL);
   // Start the framework
   if (ulfius_start_framework(&instance) == U_OK) {
-    printf("Start framework on port %d\n", instance.port);
+    printf("Start framework on port %d - v1\n", instance.port);
 
     // Wait for the user to press <enter> on the console to quit the application
     getchar();
