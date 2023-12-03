@@ -8,12 +8,21 @@
 mbbk_error_t mbbk_route_user_create(const struct _u_request *request,
                                     struct _u_response *response,
                                     void *user_data) {
+  std::string req((char *)request->binary_body, request->binary_body_length);
+  std::cout << req << std::endl;
+  Json::Reader req_j;
+  Json::Value root;
+  bool err = req_j.parse(req, root);
+  if (err) {
+    UserModel user{-1, root["username"].asString(),
+                   root["password"].asString()};
+    user.id = mbbk_storage.insert(user);
+    std::string out = mbbk_utils_generate_resp(true, root, 200);
+    ulfius_set_string_body_response(response, 200, out.c_str());
+  } else {
+    ulfius_set_string_body_response(response, 400, "wrong json format");
+  }
 
-
-  UserModel user{-1, "Paul", "Password"};
-  user.id = mbbk_storage.insert(user);
-  ulfius_set_string_body_response(response, 200,
-                                  mbbk_utils_generate_resp(true, "NULL", 200));
   return U_CALLBACK_CONTINUE;
 }
 
@@ -32,9 +41,7 @@ mbbk_error_t mbbk_route_user_get_all(const struct _u_request *request,
     arr.append(elm);
   }
   root["users"] = arr;
-
-  ulfius_set_string_body_response(response, 200,
-                                  mbbk_utils_generate_resp(true, root, 200));
-
+  std::string out = mbbk_utils_generate_resp(true, root, 200);
+  ulfius_set_string_body_response(response, 200, out.c_str());
   return U_CALLBACK_CONTINUE;
 }

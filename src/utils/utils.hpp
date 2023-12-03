@@ -6,7 +6,7 @@
 #include "sqlite_orm/sqlite_orm.h"
 #include "utils/errors.hpp"
 
-#define MBBK_DB_PATH "/var/run/mbbk.db"
+#define MBBK_DB_PATH "/usr/share/mbbk.db"
 
 extern inline auto mbbk_storage = sqlite_orm::make_storage(
     MBBK_DB_PATH,
@@ -18,7 +18,7 @@ extern inline auto mbbk_storage = sqlite_orm::make_storage(
         sqlite_orm::make_column("password", &UserModel::password)));
 
 template <class T>
-const char *mbbk_utils_generate_resp(bool success, T data, int code) {
+std::string mbbk_utils_generate_resp(bool success, T data, int code) {
   Json::Value resp;
   resp["success"] = success;
   if (success) {
@@ -26,7 +26,6 @@ const char *mbbk_utils_generate_resp(bool success, T data, int code) {
   } else {
     resp["message"] = data;
   }
-  resp["code"] = code;
   std::string resp_s = Json::FastWriter().write(resp);
-  return resp_s.c_str();
+  return resp_s;
 }

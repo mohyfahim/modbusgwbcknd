@@ -16,9 +16,15 @@
  */
 int main(void) {
   struct _u_instance instance;
- 
-  mbbk_storage.sync_schema();
 
+  // TODO: add an options to do a sync process
+  bool check = mbbk_storage.table_exists("user");
+  if (check) {
+    std::cout << "user table is existed" << std::endl;
+  } else {
+    std::cout << "user table is not existed! sync schema called" << std::endl;
+    mbbk_storage.sync_schema();
+  }
   // Initialize instance with the port number
   if (ulfius_init_instance(&instance, PORT, NULL, NULL) != U_OK) {
     fprintf(stderr, "Error ulfius_init_instance, abort\n");
