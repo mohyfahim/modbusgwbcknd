@@ -4,6 +4,7 @@
 #include "sqlite_orm/sqlite_orm.h"
 #include "utils/errors.hpp"
 #include <jansson.h>
+#include <ulfius.h>
 
 #ifdef DEVELOP
 #define MBBK_DB_PATH "mbbk.db"
@@ -53,3 +54,8 @@ json_t *mbbk_utils_generate_resp(bool success, const T &data, int code) {
   json_object_set_new(resp, "code", json_integer(code));
   return resp;
 }
+
+std::string mbbk_utils_generate_token(int min);
+
+std::pair<std::string, mbbk_error_t>
+mbbk_utils_extract_token(const struct _u_request *req);

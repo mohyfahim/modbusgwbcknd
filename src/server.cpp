@@ -7,6 +7,8 @@
 #include "routes/routes.hpp"
 #include "utils/utils.hpp"
 
+#include "routes/user/user.hpp"
+
 #include "sqlite_orm/sqlite_orm.h"
 
 #define PORT 8085
@@ -16,7 +18,6 @@
  */
 int main(void) {
   struct _u_instance instance;
-
   // TODO: add an options to do a sync process
   bool check = mbbk_storage.table_exists("user");
   if (check) {

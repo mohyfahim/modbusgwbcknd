@@ -1,10 +1,12 @@
-project('modbusgwbcknd', 'cpp',
+project('modbusgwbcknd', ['cpp', 'c'] ,
   version : '0.1',
   default_options : ['warning_level=3', 'cpp_std=c++17'])
 
 cc = meson.get_compiler('cpp')
 
 
+# incdir = include_directories('lib/sqlite_orm/include', 'src', 'lib/jose/include')
+incdir = include_directories('lib/sqlite_orm/include', 'lib/jwt-cpp/include' , 'src')
 
 
 target_cpu = target_machine.cpu()
@@ -15,6 +17,8 @@ if target_cpu == 'x86_64'
   add_project_arguments('-DDEVELOP', language : 'cpp')
 endif
 
+#subdir('lib/jose/lib')
+
 libmbedtls_dep = dependency('mbedtls', required: false)
 
 if not libmbedtls_dep.found()
@@ -24,14 +28,13 @@ if not libmbedtls_dep.found()
 endif
 
 libdeps = [dependency('libmodbus'),
-          dependency('jsoncpp'),
           dependency('libulfius'),
-          dependency('jose'),
           dependency('jansson'),
-          dependency('sqlite3')] + libmbedtls_dep + libmbedx509_dep + libmbedcrypto_dep
+          dependency('jose'),
+          dependency('openssl'),
+          dependency('sqlite3')] + libmbedtls_dep + libmbedx509_dep + libmbedcrypto_dep 
 
-incdir = include_directories('lib/sqlite_orm/include', 'src')
 
-sources = ['src/server.cpp', 'src/routes/user/user.cpp', 'src/utils/utils.cpp']
+sources = ['src/server.cpp', 'src/routes/user/user.cpp', 'src/utils/utils.cpp'] 
 
 executable('mgbcknd', sources, dependencies: libdeps, include_directories: incdir)

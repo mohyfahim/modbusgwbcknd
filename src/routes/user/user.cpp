@@ -1,25 +1,10 @@
 #include <iostream>
 #include <jansson.h>
-#include <jose/jose.h>
 
 #include "models/users.hpp"
 #include "sqlite_orm/sqlite_orm.h"
 #include "user.hpp"
 #include "utils/utils.hpp"
-
-const char *secret = "R2F3Z2d1RnlHbE1qU2ROSQ==";
-
-std::string mbbk_utils_generate_token() {
-  json_t *jwk = json_object();
-
-  json_object_set_new(jwk, "kty", json_string("oct"));
-  json_object_set_new(jwk, "k", json_string(secret));
-  json_object_set_new(jwk, "alg", json_string("A128KW"));
-
-  jose_jwk_gen(NULL, jwk);
-
-  json_t* 
-}
 
 mbbk_error_t mbbk_route_user_create(const struct _u_request *request,
                                     struct _u_response *response,
@@ -36,6 +21,10 @@ mbbk_error_t mbbk_route_user_create(const struct _u_request *request,
     UserModel user{-1, username, hashed_password};
     try {
       user.id = mbbk_storage.insert(user);
+      std::string session_token = mbbk_utils_generate_token(15);
+      std::string refresh_token = mbbk_utils_generate_token(43200);
+      json_object_set_new(js, "refresh", json_string(refresh_token.c_str()));
+      json_object_set_new(js, "session", json_string(session_token.c_str()));
       json_t *out = mbbk_utils_generate_resp(true, js, 200);
       ulfius_set_json_body_response(response, 200, out);
       json_decref(out);
@@ -74,9 +63,13 @@ mbbk_error_t mbbk_route_user_login(const struct _u_request *request,
         std::string hashed_password = mbbk_utils_hash_password(password);
         const UserModel &user = users.front();
         if (user.password == hashed_password) {
-          json_auto_t *claim = json_object();
-          json_object_set_new(claim, "user") json_t *out =
-              mbbk_utils_generate_resp(true, js, 200);
+          std::string session_token = mbbk_utils_generate_token(15);
+          std::string refresh_token = mbbk_utils_generate_token(43200);
+          json_object_set_new(js, "refresh",
+                              json_string(refresh_token.c_str()));
+          json_object_set_new(js, "session",
+                              json_string(session_token.c_str()));
+          json_t *out = mbbk_utils_generate_resp(true, js, 200);
           ulfius_set_json_body_response(response, 200, out);
           json_decref(out);
         } else {
@@ -97,22 +90,27 @@ mbbk_error_t mbbk_route_user_login(const struct _u_request *request,
   return U_CALLBACK_CONTINUE;
 }
 
-mbbk_error_t mbbk_route_user_get_all(const struct _u_request *request,
-                                     struct _u_response *response,
-                                     void *user_data) {
-  // Json::Value root;
-  // Json::Value arr(Json::arrayValue);
+mbbk_error_t mbbk_route_check_token_middleware(const struct _u_request *request,
+                                               struct _u_response *response,
+                                               void *user_data) {
+  std::pair<std::string, mbbk_error_t> err = mbbk_utils_extract_token(request);
+  if (err.second == MBBK_FAIL) {
+    MBBK_UTILS_ERROR_MSG("Authorization failed", 401);
+    return U_CALLBACK_UNAUTHORIZED;
+  } else {
+    return U_CALLBACK_CONTINUE;
+  }
+}
 
-  // auto users = mbbk_storage.get_all<UserModel>();
+mbbk_error_t mbbk_route_user_get_auth(const struct _u_request *request,
+                                      struct _u_response *response,
+                                      void *user_data) {
 
-  // for (auto &user : users) {
-  //   Json::Value elm;
-  //   elm["username"] = user.username;
-  //   elm["id"] = user.id;
-  //   arr.append(elm);
-  // }
-  // root["users"] = arr;
-  // std::string out = mbbk_utils_generate_resp(true, root, 200);
-  ulfius_set_string_body_response(response, 200, "ok");
+  return U_CALLBACK_CONTINUE;
+}
+
+mbbk_error_t mbbk_route_user_refresh_auth(const struct _u_request *request,
+                                          struct _u_response *response,
+                                          void *user_data) {
   return U_CALLBACK_CONTINUE;
 }

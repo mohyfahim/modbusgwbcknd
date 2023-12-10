@@ -4,10 +4,12 @@
 #include <jansson.h>
 #include <mbedtls/sha256.h>
 
+#include "jwt-cpp/jwt.h"
 #include "models/users.hpp"
 #include "sqlite_orm/sqlite_orm.h"
 #include "utils/errors.hpp"
 
+#define JWT_SECRET "R2F3Z2d1RnlHbE1qU2ROSQ=="
 
 std::string mbbk_utils_hash_password(const std::string &password) {
   mbedtls_sha256_context ctx;
@@ -33,3 +35,34 @@ std::string mbbk_utils_hash_password(const std::string &password) {
   return hashStr;
 }
 
+std::string mbbk_utils_generate_token(int min) {
+  const auto time = jwt::date::clock::now();
+  auto token =
+      jwt::create()
+          .set_type("JWS")
+          .set_issuer("auth0")
+          .set_expires_at(time + std::chrono::minutes(min))
+          .set_payload_claim("username", jwt::claim(std::string("test")))
+          .sign(jwt::algorithm::hs256{JWT_SECRET});
+  return token;
+}
+
+std::pair<std::string, mbbk_error_t>
+mbbk_utils_extract_token(const struct _u_request *req) {
+
+  try {
+    std::string token = u_map_get(req->map_header, "Authorization");
+
+    for (std::string::size_type i = 0; i < token.size(); ++i) {
+      if (token[i] == ' ') {
+        std::string validate = token.substr(0, i);
+        std::cout << validate << "," << token.substr(i+1) << std::endl;
+        break;
+      }
+    }
+    return std::make_pair(token, MBBK_OK);
+
+  } catch (...) {
+    return std::make_pair("", MBBK_FAIL);
+  }
+}
